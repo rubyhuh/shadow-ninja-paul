@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: my-app
+  name: devops-project-app
   namespace: argocd
 spec:
   destination:
@@ -9,8 +9,8 @@ spec:
     namespace: default
   project: default
   source:
-    repoURL: https://github.com/ваш-username/my-gitops-app.git
-    path: charts/my-app
+    repoURL: https://github.com/rubyhuh/shadow-ninja-paul.git
+    path: charts/devops-project-app
     targetRevision: main
   syncPolicy:
     automated:
