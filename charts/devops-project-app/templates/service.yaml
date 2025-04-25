@@ -1,15 +1,14 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Release.Name }}-svc
+  name: {{ .Release.Name }}-svc  # Динамическое имя
   labels:
-    {{- include "..labels" . | nindent 4 }}
+    app: {{ .Release.Name }}
 spec:
-  type: {{ .Values.service.type }}
+  type: ClusterIP  # Или NodePort/LoadBalancer
   ports:
-    - port: {{ .Values.service.port }}
-      targetPort: http
-      protocol: TCP
-      name: http
+  - port: 80       # Порт сервиса
+    targetPort: 80 # Порт пода (должен совпадать с контейнером)
+    protocol: TCP
   selector:
-    {{- include "..selectorLabels" . | nindent 4 }}
+    app: {{ .Release.Name }}  # Должен совпадать с labels в Deployment
