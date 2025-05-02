@@ -69,10 +69,15 @@ jobs:
           KUBECONFIG_CONTENT: ${{ secrets.KUBECONFIG_CONTENT }}
         run: |
           echo "$KUBECONFIG_CONTENT" | base64 -d > ~/.kube/config
+	  chmod 600 ~/.kube/config
 
       - name: Set KUBECONFIG
         run: |
           export KUBECONFIG=~/.kube/config
+
+      - name: Use default context
+  	run: |
+	  kubectl config use-context orbstack || echo "Context not found"
 
       - name: Check Kubernetes nodes
         run: |
