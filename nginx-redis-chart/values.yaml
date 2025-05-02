@@ -8,4 +8,4 @@ nginx:
   image: nginx
 
 service:
-  type: NodePorty
+  type: NodePort
