@@ -1,0 +1,41 @@
+name: Helm Chart CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-helm-chart:
+    name: Build and Lint Helm Chart
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: latest
+
+      - name: Run Helm Lint
+        run: |
+          helm lint ./nginx-redis-chart
+
+      - name: Package Helm Chart
+        run: |
+          helm package ./nginx-redis-chart --destination ./chart-output
+
+      - name: List packaged chart
+        run: |
+          ls -la ./chart-output/
+
+      - name: Upload Helm Chart as Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: helm-chart
+          path: ./chart-output/
