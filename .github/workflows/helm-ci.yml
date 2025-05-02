@@ -91,8 +91,3 @@ jobs:
       - name: Helm upgrade --install
         run: |
           helm upgrade --install my-release ./chart-output/*.tgz
-     
-      - name: Debug: Show kubeconfig content
-        run: |
-    	  echo "$KUBECONFIG_CONTENT" | base64 -d > /tmp/kubeconfig
-          cat /tmp/kubeconfig
