@@ -1,0 +1,11 @@
+redis:
+  replicaCount: 1
+  image: redis
+  values: "<not set>"
+
+nginx:
+  replicaCount: 2
+  image: nginx
+
+service:
+  type: NodePorty

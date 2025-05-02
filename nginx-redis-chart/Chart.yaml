@@ -1,0 +1,6 @@
+apiVersion: v2
+name: nginx-redis-chart
+description: A Helm chart for deploying Nginx + Redis on Kubernetes
+version: 0.1.0
+appVersion: "1.0"
+type: application

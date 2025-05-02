@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "nginx-redis-chart.fullname" . }}-nginx-service
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    app: {{ include "nginx-redis-chart.fullname" . }}-nginx
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80

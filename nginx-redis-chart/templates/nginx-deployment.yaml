@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "nginx-redis-chart.fullname" . }}-nginx
+spec:
+  replicas: {{ .Values.nginx.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "nginx-redis-chart.fullname" . }}-nginx
+  template:
+    metadata:
+      labels:
+        app: {{ include "nginx-redis-chart.fullname" . }}-nginx
+    spec:
+      containers:
+        - name: nginx
+          image: "{{ .Values.nginx.image }}"
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: nginx-html
+              mountPath: /usr/share/nginx/html
+      volumes:
+        - name: nginx-html
+          configMap:
+            name: {{ include "nginx-redis-chart.fullname" . }}-nginx-html
