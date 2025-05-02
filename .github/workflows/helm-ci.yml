@@ -39,3 +39,55 @@ jobs:
         with:
           name: helm-chart
           path: ./chart-output/
+
+  deploy-helm-chart:
+    name: Deploy Helm Chart to Kubernetes
+    needs: build-helm-chart
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Download Helm Chart
+        uses: actions/download-artifact@v3
+        with:
+          name: helm-chart
+          path: ./chart-output
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: latest
+
+      - name: Create .kube directory
+        run: |
+          mkdir -p ~/.kube
+
+      - name: Write kubeconfig file
+        env:
+          KUBECONFIG_CONTENT: ${{ secrets.KUBECONFIG_CONTENT }}
+        run: |
+          echo "$KUBECONFIG_CONTENT" | base64 -d > ~/.kube/config
+
+      - name: Set KUBECONFIG
+        run: |
+          export KUBECONFIG=~/.kube/config
+
+      - name: Check Kubernetes nodes
+        run: |
+          kubectl get nodes
+
+      - name: Upgrade or install Helm release
+        uses: azure/setup-helm@v3
+        with:
+          version: latest
+
+      - name: Helm repo update
+        run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo update
+
+      - name: Helm upgrade --install
+        run: |
+          helm upgrade --install my-release ./chart-output/*.tgz
