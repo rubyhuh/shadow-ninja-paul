@@ -1,59 +1,18 @@
-name: Helm Chart CI
+name: Helm CI/CD Pipeline
 
 on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
 
 jobs:
-  build-helm-chart:
-    name: Build and Lint Helm Chart
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Setup Helm
-        uses: azure/setup-helm@v3
-        with:
-          version: latest
-
-      - name: Run Helm Lint
-        run: |
-          helm lint ./nginx-redis-chart
-
-      - name: Package Helm Chart
-        run: |
-          helm package ./nginx-redis-chart --destination ./chart-output
-
-      - name: List packaged chart
-        run: |
-          ls -la ./chart-output/
-
-      - name: Upload Helm Chart as Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: helm-chart
-          path: ./chart-output/
-
   deploy-helm-chart:
     name: Deploy Helm Chart to Kubernetes
-    needs: build-helm-chart
     runs-on: self-hosted
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
-      - name: Download Helm Chart
-        uses: actions/download-artifact@v4
-        with:
-          name: helm-chart
-          path: ./chart-output
 
       - name: Install kubectl
         uses: azure/setup-kubectl@v3
@@ -64,23 +23,24 @@ jobs:
         env:
           KUBECONFIG_CONTENT: ${{ secrets.KUBECONFIG_CONTENT }}
         run: |
-          echo "$KUBECONFIG_CONTENT" | base64 -d > /tmp/kubeconfig
-          chmod 600 /tmp/kubeconfig
+          mkdir -p ~/.kube
+          echo "$KUBECONFIG_CONTENT" | base64 -d > ~/.kube/config
+          chmod 600 ~/.kube/config
 
-      - name: Get Kubernetes nodes
+      - name: Set KUBECONFIG
         run: |
-          kubectl --kubeconfig=/tmp/kubeconfig get nodes
+          export KUBECONFIG=~/.kube/config
 
-      - name: Show current context
+      - name: Check Kubernetes context
         run: |
-          kubectl --kubeconfig=/tmp/kubeconfig config current-context
+          kubectl config current-context
 
-      - name: Helm OCI setup and install
+      - name: Helm upgrade --install from OCI
         run: |
           helm upgrade --install my-release oci://registry-1.docker.io/bitnamicharts/nginx --version 19.0.1
-          helm dependency update ./chart-output
-          helm upgrade --install my-release ./chart-output --kubeconfig=/tmp/kubeconfig
-     
-      - name: Helm upgrade --install
+
+      - name: Show service URL
         run: |
-          helm --kubeconfig=/tmp/kubeconfig upgrade --install my-release ./chart-output/*.tgz
+          export SERVICE_PORT=$(kubectl get --namespace default -o jsonpath="{.spec.ports[0].port}" services my-release-nginx)
+          export SERVICE_IP=$(kubectl get svc --namespace default my-release-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          echo "Service URL: http://${SERVICE_IP}:${SERVICE_PORT}"
