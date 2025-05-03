@@ -78,7 +78,7 @@ jobs:
       - name: Helm repo update
         run: |
           helm repo remove bitnami || echo "Bitnami repo not found, will add it"
-          helm repo add bitnami https://bitnami.github.io/bitnami-charts
+          helm repo add bitnami https://charts.bitnami.com/bitnami-charts
           helm repo update
 
       - name: Helm upgrade --install
