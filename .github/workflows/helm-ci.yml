@@ -75,13 +75,12 @@ jobs:
         run: |
           kubectl --kubeconfig=/tmp/kubeconfig config current-context
 
-      - name: Helm repo update (OCI)
+      - name: Helm OCI setup and install
         run: |
-          # Не нужно добавлять репозиторий — просто используем напрямую
-          helm pull oci://registry-1.docker.io/bitnamicharts/nginx --version 16.0.0 --destination ./deps
-          helm dependency build ./chart-output
+          helm pull oci://registry-1.docker.io/bitnamicharts/nginx --version 16.0.0 --untar
           helm dependency update ./chart-output
-
+          helm upgrade --install my-release ./chart-output --kubeconfig=/tmp/kubeconfig
+     
       - name: Helm upgrade --install
         run: |
           helm --kubeconfig=/tmp/kubeconfig upgrade --install my-release ./chart-output/*.tgz
