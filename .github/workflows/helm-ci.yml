@@ -77,7 +77,7 @@ jobs:
 
       - name: Helm OCI setup and install
         run: |
-          helm pull oci://registry-1.docker.io/bitnamicharts/nginx --version 19.0.1 --untar
+          helm install my-release oci://registry-1.docker.io/bitnamicharts/nginx --version 19.0.1
           helm dependency update ./chart-output
           helm upgrade --install my-release ./chart-output --kubeconfig=/tmp/kubeconfig
      
